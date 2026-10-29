@@ -1,0 +1,33 @@
+{
+  "development": {
+    "server": {
+      "port": 3000,
+      "host": "127.0.0.1",
+      "cors": true
+    },
+    "rclone": {
+      "baseUrl": "http://127.0.0.1:5572",
+      "binaryPath": "../../../rclone/rclone.exe"
+    },
+    "swagger": {
+      "enabled": true,
+      "path": "docs"
+    }
+  },
+  "production": {
+    "server": {
+      "port": 3000,
+      "host": "127.0.0.1",
+      "cors": true
+    },
+    "rclone": {
+      "baseUrl": "http://127.0.0.1:5572",
+      "binaryPath": "./resources/bin/win32-x64/rclone.exe"
+    },
+    "swagger": {
+      "enabled": false,
+      "path": "docs"
+    }
+  }
+}
+
