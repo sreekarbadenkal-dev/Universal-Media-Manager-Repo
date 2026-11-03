@@ -5,7 +5,7 @@ import { RcloneService } from '../common/rclone/rclone.service';
 @ApiTags('Rclone Engine')
 @Controller('rclone')
 export class RcloneController {
-  constructor(@Inject(RcloneService) private readonly rcloneService: RcloneService) {}
+  constructor(@Inject(RcloneService) private readonly rcloneService: RcloneService) { }
 
   @Get('version')
   @ApiOperation({ summary: 'Check if Rclone daemon is reachable and get version info' })
@@ -23,6 +23,8 @@ export class RcloneController {
   @ApiOperation({ summary: 'Get total, used, and free space on a local drive or remote' })
   @ApiQuery({ name: 'path', example: 'C:/', description: 'Drive path like C:/ or gdrive:' })
   async getQuota(@Query('path') path: string) {
+    if (!path) return Promise.reject({ code: 'BAD_REQUEST', message: 'Path is required' })
+    else if (path && !path.includes(':') && path !== '/') return Promise.reject({ code: 'BAD_REQUEST', message: 'Invalid path' })
     return this.rcloneService.getQuota(path || 'C:/');
   }
 

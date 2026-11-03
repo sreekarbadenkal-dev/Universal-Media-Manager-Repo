@@ -7,7 +7,8 @@
     },
     "rclone": {
       "baseUrl": "http://127.0.0.1:5572",
-      "binaryPath": "../../../rclone/rclone.exe"
+      "binaryPath": "../../../rclone/rclone.exe",
+      "clientSecret": "${GOOGLE_CLIENT_SECRET}"
     },
     "swagger": {
       "enabled": true,
@@ -30,4 +31,3 @@
     }
   }
 }
-

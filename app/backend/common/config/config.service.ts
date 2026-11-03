@@ -11,6 +11,8 @@ export interface ServerConfig {
 export interface RcloneConfig {
   baseUrl: string;
   binaryPath: string;
+  clientId?: string;
+  clientSecret?: string;
 }
 
 export interface SwaggerConfig {
