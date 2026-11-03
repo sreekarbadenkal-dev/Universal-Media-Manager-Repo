@@ -16,39 +16,44 @@ export class AuthService {
     @Inject(JobManagerService) private readonly jobManager: JobManagerService
   ) { }
 
-  //Helper to construct parameters with custom client credentials if configured
-
-  private buildDriveParameters(scope?: string): Record<string, string> {
+  // Helper to construct parameters with custom client credentials if configured
+  private buildDriveParameters(dto: ConnectDriveDTO): Record<string, string> {
     const params: Record<string, string> = {
-      scope: scope || Placeholders.DriveScope.FULL
+      scope: dto.scope || Placeholders.DriveScope.FULL
     };
 
-    if (this.configService.rclone.clientId) {
-      params.client_id = this.configService.rclone.clientId;
+    const clientId = dto.clientId || this.configService.rclone.clientId;
+    if (clientId) {
+      params.client_id = clientId;
     }
-    if (this.configService.rclone.clientSecret) {
-      params.client_secret = this.configService.rclone.clientSecret;
+
+    const clientSecret = dto.clientSecret || this.configService.rclone.clientSecret;
+    if (clientSecret) {
+      params.client_secret = clientSecret;
     }
 
     return params;
   }
 
-  //Onboard a user by connecting their Google Drive account
+  // Onboard a user by connecting their Google Drive account
   async processGoogleDriveAuth(jobId: string, dto: ConnectDriveDTO) {
     this.jobManager.emitProgress(jobId, Placeholders.AuthStatus.INIT, { message: 'Cleaning previous auth process' });
 
-    await this.rclone.call(Placeholders.Endpoints.OAUTH_STOP).catch(() => { })
-
-    this.jobManager.emitProgress(jobId, Placeholders.AuthStatus.WAITING, { message: 'Browser opened waiting for user' });
-
     try {
 
+      const exsistingRemotes = await this.rclone.listRemotes();
+      const isDuplicate = exsistingRemotes.some(rem => rem.replace(':', '') === dto.name);
+      if (isDuplicate) {
+        throw new Error(`Remote ${dto.name} already exists`);
+      }
+
+      await this.rclone.call(Placeholders.Endpoints.OAUTH_STOP).catch(() => { });
+      this.jobManager.emitProgress(jobId, Placeholders.AuthStatus.WAITING, { message: 'Browser opened waiting for user' });
       await this.rclone.call(Placeholders.Endpoints.CREATE_REMOTE, {
         name: dto.name,
         type: Placeholders.DriveType.GOOGLE_DRIVE,
-        parameters: this.buildDriveParameters(dto.scope)
+        parameters: this.buildDriveParameters(dto)
       });
-
 
       this.jobManager.completeJob(jobId, {
         status: Placeholders.AuthStatus.SUCCESS,
@@ -57,9 +62,7 @@ export class AuthService {
     } catch (err: any) {
       this.jobManager.failJob(jobId, err);
     }
-
   }
-
 
   async listAccounts() {
     return this.rclone.call(Placeholders.Endpoints.LIST_REMOTES);

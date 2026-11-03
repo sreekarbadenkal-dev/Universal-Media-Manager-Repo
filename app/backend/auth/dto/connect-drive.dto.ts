@@ -21,4 +21,22 @@ export class ConnectDriveDTO {
   @IsString()
   @IsOptional()
   scope?: string = Placeholders.DriveScope.FULL;
+
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Custom Google OAuth Client ID (optional)',
+    example: '59702873.....apps.googleusercontent.com'
+  })
+  @IsString()
+  @IsOptional()
+  clientId?: string;
+
+  @ApiPropertyOptional({
+    type: String,
+    description: 'Custom Google OAuth Client Secret (optional)',
+    example: 'GOCSPX....'
+  })
+  @IsString()
+  @IsOptional()
+  clientSecret?: string;
 }

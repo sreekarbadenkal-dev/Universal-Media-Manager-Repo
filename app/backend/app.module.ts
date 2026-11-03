@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CommonModule } from './common/common.module';
 import { AuthModule } from './auth/auth.module';
-import { RcloneController } from './controllers/rclone.controller';
+import { RcloneController } from './rclone/rclone.controller';
 
 @Module({
   imports: [CommonModule, AuthModule],
