@@ -1,6 +1,6 @@
 import { Controller, Get, Query, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
-import { RcloneService } from '../common/rclone/rclone.service';
+import { RcloneService } from './rclone.service';
 
 @ApiTags('Rclone Engine')
 @Controller('rclone')
@@ -33,7 +33,7 @@ export class RcloneController {
   @ApiQuery({ name: 'fs', example: 'C:/', description: 'Root filesystem/drive' })
   @ApiQuery({ name: 'remote', required: false, example: '', description: 'Subdirectory inside the drive' })
   async listFiles(@Query('fs') fs: string, @Query('remote') remote?: string) {
-    return this.rcloneService.listDirectory(fs || 'C:/', remote || '');
+    return this.rcloneService.listDirectory({ fs: fs || 'C:/', path: remote || '' });
   }
 
   @Get('stats')

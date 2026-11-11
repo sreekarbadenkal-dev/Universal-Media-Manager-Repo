@@ -12,7 +12,7 @@ export namespace Placeholders {
     FILE = 'drive.file'
   }
 
-  export enum AuthStatus {
+  export enum Status {
     INIT = 'INITIALIZING',
     WAITING = 'WAITING_FOR_USER',
     SUCCESS = 'SUCCESS',
@@ -32,10 +32,21 @@ export namespace Placeholders {
     STOP_JOB = 'job/stop',
     JOB_STATUS = 'job/status',
     OAUTH_STOP = 'config/oauthstop',
-    OAUTH_STATUS = 'config/oauthstatus'
+    OAUTH_STATUS = 'config/oauthstatus',
+    QUIT_DAEMON = 'core/quit'
   }
 
   export enum EventNames {
-    AUTH = 'Authentication'
+    AUTH = 'Authentication',
+    FILE_LIST = 'FileList'
+  }
+
+  export const MediaFileExtensions = {
+    VIDEO_EXT: ['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm', 'mpeg', 'mpg', 'm4v', '3gp', '3g2'],
+    IMAGE_EXT: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'svg', 'ico'],
+    AUDIO_EXT: ['mp3', 'wav', 'aac', 'flac', 'ogg', 'm4a', 'wma', 'mp2', 'ac3', 'dts'],
+    DOC_EXT: ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'rtf', 'csv', 'md'],
+    SUBTITLE_EXT: ['srt', 'ass', 'ssa', 'vtt', 'sub', 'idx'],
+    SUBFOLDER_EXT: ['directory','inode/directory','folder','subfolder']
   }
 }

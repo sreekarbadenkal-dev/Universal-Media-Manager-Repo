@@ -1,10 +1,10 @@
 import { Injectable, Inject, Logger, MessageEvent } from '@nestjs/common';
-import { RcloneService } from '../common/rclone/rclone.service';
+import { RcloneService } from '../rclone/rclone.service';
 import { ConfigService } from '../common/config/config.service';
 import { Placeholders } from '../common/types/placeholder-types';
 import { ConnectDriveDTO } from './dto/connect-drive.dto';
 import { Observable } from 'rxjs';
-import { JobManagerService } from '../common/jobs/jobs.service';
+import { JobManagerService } from '../jobs/jobs.service';
 
 @Injectable()
 export class AuthService {
@@ -37,7 +37,7 @@ export class AuthService {
 
   // Onboard a user by connecting their Google Drive account
   async processGoogleDriveAuth(jobId: string, dto: ConnectDriveDTO) {
-    this.jobManager.emitProgress(jobId, Placeholders.AuthStatus.INIT, { message: 'Cleaning previous auth process' });
+    this.jobManager.emitProgress(jobId, Placeholders.Status.INIT, { message: 'Cleaning previous auth process' });
 
     try {
 
@@ -48,7 +48,7 @@ export class AuthService {
       }
 
       await this.rclone.call(Placeholders.Endpoints.OAUTH_STOP).catch(() => { });
-      this.jobManager.emitProgress(jobId, Placeholders.AuthStatus.WAITING, { message: 'Browser opened waiting for user' });
+      this.jobManager.emitProgress(jobId, Placeholders.Status.WAITING, { message: 'Browser opened waiting for user' });
       await this.rclone.call(Placeholders.Endpoints.CREATE_REMOTE, {
         name: dto.name,
         type: Placeholders.DriveType.GOOGLE_DRIVE,
@@ -56,7 +56,7 @@ export class AuthService {
       });
 
       this.jobManager.completeJob(jobId, {
-        status: Placeholders.AuthStatus.SUCCESS,
+        status: Placeholders.Status.SUCCESS,
         remoteName: `${dto.name}:`
       });
     } catch (err: any) {

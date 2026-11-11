@@ -1,9 +1,8 @@
-import { Controller, Post, Get, Delete, Body, Query, Inject, Sse, MessageEvent, Param } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Body, Query, Inject } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery, ApiBody } from '@nestjs/swagger';
-import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { ConnectDriveDTO } from './dto/connect-drive.dto';
-import { JobManagerService } from '../common/jobs/jobs.service';
+import { JobManagerService } from '../jobs/jobs.service';
 import { Placeholders } from '../common/types/placeholder-types';
 
 @ApiTags('Authentication & Onboarding')
@@ -22,17 +21,10 @@ export class AuthController {
     this.authService.processGoogleDriveAuth(jobId, dto);
     return {
       jobId: jobId,
-      status: Placeholders.AuthStatus.INIT,
-      streamUrl: `/auth/${jobId}/stream`
+      status: Placeholders.Status.INIT,
+      streamUrl: '/jobs/stream'
     }
   }
-
-  @Sse(':jobId/stream')
-  @ApiOperation({ summary: 'Stream Google Drive OAuth onboarding state via SSE' })
-  connectGoogleDriveSse(@Param('jobId') jobId: string) {
-    return this.jobManager.getStream(jobId);
-  }
-
 
   @Post('stop-oauth')
   @ApiOperation({ summary: 'Cancel/stop any pending Google Drive OAuth listener' })

@@ -1,6 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
-import { ConfigService } from '../config/config.service';
-import { Placeholders } from '../types/placeholder-types';
+import { ConfigService } from '../common/config/config.service';
+import { Placeholders } from '../common/types/placeholder-types';
+import { FileListDto } from '../explorer/dto/files-list.dto';
 
 @Injectable()
 export class RcloneService {
@@ -44,6 +45,16 @@ export class RcloneService {
     }
   }
 
+  private async abort<T = any>(endpoint: string, signal: AbortSignal, pid: string) {
+    const url = `${this.baseUrl}/${endpoint}`
+    this.logger.warn(`[RClone HTTP] Aboarting the rclone child process`)
+    try {
+      await fetch(url, { method: "POST", signal })
+    } catch (err) {
+      this.logger.error(`[RClone HTTP Error] Aborting rclone failed, please kill the process ${pid} manually`)
+    }
+  }
+
   // --- Convenience Helpers using Placeholders ---
   public async getVersion() {
     return this.call(Placeholders.Endpoints.VERSION);
@@ -58,12 +69,20 @@ export class RcloneService {
     return this.call(Placeholders.Endpoints.GET_QUOTA, { fs });
   }
 
-  public async listDirectory(fs: string, remote = '', dirsOnly = false, filesOnly = false) {
-    return this.call(Placeholders.Endpoints.LIST_DIRECTORY, {
-      fs,
-      remote,
-      opt: { dirsOnly, filesOnly }
-    });
+  public async listDirectory(dto: FileListDto) {
+    const { MaxDepth, ...listOpt } = dto.opt ?? {};
+    const fs = dto.fs.includes(":") ? dto.fs : `${dto.fs}:`
+    const payload: Record<string, any> = {
+      fs: fs,
+      remote: dto.path ?? '',
+      opt: listOpt
+    };
+
+    if (MaxDepth !== undefined) {
+      payload._filter = { MaxDepth };
+    }
+
+    return this.call(Placeholders.Endpoints.LIST_DIRECTORY, payload);
   }
 
   public async startCopy(srcFs: string, dstFs: string) {
@@ -81,5 +100,9 @@ export class RcloneService {
 
   public async stopJob(jobid: number) {
     return this.call(Placeholders.Endpoints.STOP_JOB, { jobid });
+  }
+
+  public async stopRcloneProcess(signal: AbortSignal, pid: string = '') {
+    return this.abort(Placeholders.Endpoints.QUIT_DAEMON, signal, pid)
   }
 }
