@@ -32,15 +32,64 @@ Desktop-ready media & cloud storage manager powered by a **NestJS** backend and 
 
 ---
 
-## Backend Development
+## Getting Started (Starting the Server)
 
-From `app/backend`:
+1. **Prerequisites**
+   - **Node.js** (v18+ recommended) and **npm**
+   - **Rclone binary:** In development, `RcloneProcessService` looks for `rclone/rclone.exe` (relative to the repo root, configured in `app/backend/common/config/config.json`). On startup, NestJS automatically launches:
+     ```text
+     rclone rcd --rc-no-auth --rc-addr=127.0.0.1:5572 --rc-serve
+     ```
 
-```powershell
-npm install
-npm run dev
-```
+2. **Install dependencies**
+   ```powershell
+   cd app/backend
+   npm install
+   ```
 
-- **Backend URL:** `http://127.0.0.1:3000`
-- **Swagger UI:** `http://127.0.0.1:3000/docs`
-- **Typecheck:** `npx tsc --noEmit`
+3. **Configure environment variables (optional, for Google Drive OAuth)**
+   Create a `.env` file in `app/backend/.env` (or the repo root):
+   ```env
+   GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+   GOOGLE_CLIENT_SECRET=your-client-secret
+   ```
+   *(See the **Google Drive Auth & Client ID Setup** section below for details.)*
+
+4. **Start the backend server**
+   ```powershell
+   # Development (auto-reloads on file changes)
+   npm run dev
+
+   # Or standard start
+   npm start
+   ```
+
+5. **Verify it is running**
+   - **Backend URL:** `http://127.0.0.1:3000`
+   - **Swagger UI:** `http://127.0.0.1:3000/docs`
+   - **Health check:** Call `GET /rclone/version` in Swagger to confirm NestJS is talking to the Rclone daemon.
+   - **Typecheck:** `npx tsc --noEmit`
+
+---
+
+## Google Drive Auth & Client ID Setup
+
+`POST /auth/connect-gdrive` supports two ways to authenticate Google Drive remotes:
+
+### Option A: Custom Google OAuth Credentials (Recommended)
+Using your own Google Cloud OAuth credentials avoids Rclone's shared rate limits and gives you full control over your app's quota:
+1. In **Google Cloud Console**, create/select a project and enable the **Google Drive API**.
+2. Configure the **OAuth consent screen** (add your Google account as a Test User if the app is in Testing mode).
+3. Create **OAuth 2.0 Client ID** credentials of type **Desktop app**, and copy the **Client ID** and **Client Secret**.
+4. Provide them in either of two ways:
+   - **Via `.env` (applies as default for all connections):** Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `app/backend/.env` (loaded automatically by `ConfigService`).
+   - **Per request:** Pass `clientId` and `clientSecret` directly in the `POST /auth/connect-gdrive` request body (overrides `.env` for that connection).
+
+### Option B: Omit Client ID & Secret (Quick Testing)
+Both `clientId` and `clientSecret` are optional in `ConnectDriveDTO`. If neither `.env` nor the request body provides them, Rclone falls back to its built-in default OAuth credentials.
+
+### How the OAuth Flow Works
+1. Call `POST /auth/connect-gdrive` with `{ "name": "my-google-drive" }` (plus optional `scope`, `clientId`, `clientSecret`).
+2. Subscribe to `GET /jobs/stream` (SSE) with the returned `jobId` to track status (`INIT` → `WAITING` → `SUCCESS` / `FAILED`).
+3. Rclone opens your default browser for Google sign-in and consent. Once approved, the remote is saved in Rclone's config.
+4. Verify linked accounts with `GET /auth/accounts` (or cancel a stalled login with `POST /auth/stop-oauth`).
