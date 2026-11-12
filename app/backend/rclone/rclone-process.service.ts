@@ -71,7 +71,7 @@ export class RcloneProcessService implements OnModuleInit, OnApplicationShutdown
 
         const proc = spawn(
             binpath || '',//to know location
-            ['rcd', '--rc-no-auth', '--rc-addr=127.0.0.1:5572'],//daemon mode no auth and listen on ipv4loopback:5527
+            ['rcd', '--rc-no-auth', '--rc-addr=127.0.0.1:5572','--rc-serve'],//daemon mode no auth and listen on ipv4loopback:5527
             {
                 stdio: ['ignore','ignore','pipe'],//ignoring the logs by rclone 
                 windowsHide: true,//hiding the cmd window cause by exe files

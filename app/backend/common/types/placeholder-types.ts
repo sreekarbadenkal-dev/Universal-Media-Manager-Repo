@@ -26,6 +26,7 @@ export namespace Placeholders {
     LIST_REMOTES = 'config/listremotes',
     GET_QUOTA = 'operations/about',
     LIST_DIRECTORY = 'operations/list',
+    GET_FILE_METADATA = 'operations/stat',
     COPY = 'sync/copy',
     MOVE = 'sync/move',
     STATS = 'core/stats',

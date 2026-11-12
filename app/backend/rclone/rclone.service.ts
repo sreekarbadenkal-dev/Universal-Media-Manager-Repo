@@ -85,6 +85,11 @@ export class RcloneService {
     return this.call(Placeholders.Endpoints.LIST_DIRECTORY, payload);
   }
 
+  public async fetchFileContent(url:string,controller:AbortController,headers:Record<string,string>){
+    const accurateurl = url.startsWith('/')?url.slice(1):url
+    return await fetch(`${this.baseUrl}/${accurateurl}`, {signal:controller.signal,headers});
+  }
+
   public async startCopy(srcFs: string, dstFs: string) {
     const res = await this.call<{ jobid: number }>(Placeholders.Endpoints.COPY, {
       srcFs,

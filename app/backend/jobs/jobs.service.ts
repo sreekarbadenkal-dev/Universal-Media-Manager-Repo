@@ -19,16 +19,19 @@ export class JobManagerService {
     private readonly jobStates = new Map<string, JobState>();
     private readonly cleanupTimers = new Map<string,NodeJS.Timeout>();
 
+    //create a job with unique id
     createJob(): string {
         const jobId = randomUUID();
         this.jobStates.set(jobId, { id: jobId, status: Placeholders.Status.WAITING });
         return jobId;
     }
 
+    //creating a global pipe to stream all events 
     getGlobalStream(): Observable<MessageEvent> {
         return this.globalStream.asObservable();
     }
 
+    //get the state of the job using id
     getJobState(jobId: string): JobState {
         const state = this.jobStates.get(jobId);
         if (!state) {
@@ -37,15 +40,18 @@ export class JobManagerService {
         return state;
     }
 
+    //emit the current state of the job
     emitProgress(jobId: string, status: Placeholders.Status, payload: any = {}): void {
         this.publishJobEvent(jobId, status, { data: payload });
     }
 
+    //mark the job as comolete
     completeJob(jobId: string, finalResult: any): void {
         this.publishJobEvent(jobId, Placeholders.Status.SUCCESS, { data: finalResult},{hasResult: true});
         this.scheduleCleanup(jobId);
     }
 
+    //mark the job as failure
     failJob(jobId: string, error: Error): void {
         this.publishJobEvent(jobId, Placeholders.Status.FAILED, {
             err: error?.message ?? 'Unknown error',
@@ -53,6 +59,7 @@ export class JobManagerService {
         this.scheduleCleanup(jobId);
     }
 
+    //put the event in the pipe
     private publishJobEvent(
         jobId: string,
         status: Placeholders.Status,
@@ -66,6 +73,7 @@ export class JobManagerService {
         });
     }
 
+    //clean the events from the pipe
     private scheduleCleanup(jobId: string): void {
         const existing = this.cleanupTimers.get(jobId);
         if (existing) clearTimeout(existing);
